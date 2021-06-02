@@ -1,0 +1,18 @@
+{
+    "target": {
+        "regex": "http(s?):\/\/(www\\.)?target\\.com.*\/p\/.*A-[0-9]{8,10}.*",
+        "enabled": true
+    },
+    "amazon": {
+        "regex": "http(s?):\/\/(www\\.)?(smile\\.?)amazon\\.com.*[A-Z0-9]{10,11}.*",
+        "enabled": false
+    },
+    "walmart": {
+        "regex": "http(s?):\/\/(www\\.)?walmart\\.com.*\/ip\/.*\/[0-9]{9,10}.*",
+        "enabled": false
+    },
+    "walmartAtc": {
+        "regex": "http(s?):\/\/(www\\.)?(affil\\.)?walmart\\.com.*\/cart\/.*\/[0-9]{9,10}.*",
+        "enabled": false
+    }
+}
