@@ -1,0 +1,29 @@
+{
+    "outlook.com": {
+        "popServer": "outlook.office365.com",
+        "popPort": "995",
+        "popEncyprtion": "TLS",
+        "imapServer": "outlook.office365.com",
+        "imapPort": "993",
+        "imapEncryption": "TLS",
+        "smtpServer": "smtp-mail.outlook.com",
+        "smtpPort": "587",
+        "smtpEcnryption": "STARTTLS"
+    }, 
+    "yahoo.com": {
+        "popServer": "pop.mail.yahoo.com",
+        "popPort": "995",
+        "popEncyprtion": "SSL",
+        "smtpServer": "smtp.mail.yahoo.com",
+        "smtpPort": "587",
+        "smtpEcnryption": "STARTTLS"
+    },
+    "gmail.com": {
+        "popServer": "pop.gmail.com",
+        "popPort": "995",
+        "popEncyprtion": "SSL",
+        "smtpServer": "smtp.gmail.com",
+        "smtpPort": "587",
+        "smtpEcnryption": "STARTTLS"
+    }
+}
