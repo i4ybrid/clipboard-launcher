@@ -8,11 +8,13 @@ const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 function loadReset() {
     puppeteer
         .launch({
-            headless: (SHOW_WINDOW !== true)
+            headless: (SHOW_WINDOW !== true),
+            ignoreDefaultArgs: ["--enable-automation"],
+            trueignoreHTTPSErrors: true
         }).then(async (browser) => {
 
             let page = await browser.newPage();
-            await page.setViewport({ width: 1200, height: 768 });
+            await page.setViewport({ width: 900, height: 900 });
             page.setUserAgent(USER_AGENT);
             await page.goto(TARGET_URL);
             await page.click("a#account");
@@ -87,7 +89,7 @@ async function clickOnElement(page, elem, x = null, y = null) {
     }, elem);
 
     // Use given position or default to center
-    const _x = x !== null ? x : rect.width / 3;
+    const _x = x !== null ? x : rect.width / 2;
     const _y = y !== null ? y : rect.height / 2;
 
     console.log("Clicking on " + (rect.left + _x) + " : " + (rect.top + _y));
