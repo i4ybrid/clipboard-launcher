@@ -2,7 +2,18 @@
     "outlook.com": {
         "popServer": "outlook.office365.com",
         "popPort": "995",
-        "popEncyprtion": "TLS",
+        "popEncryption": "TLS",
+        "imapServer": "outlook.office365.com",
+        "imapPort": "993",
+        "imapEncryption": "TLS",
+        "smtpServer": "smtp-mail.outlook.com",
+        "smtpPort": "587",
+        "smtpEcnryption": "STARTTLS"
+    },
+    "hotmail.com": {
+        "popServer": "outlook.office365.com",
+        "popPort": "995",
+        "popEncryption": "TLS",
         "imapServer": "outlook.office365.com",
         "imapPort": "993",
         "imapEncryption": "TLS",
@@ -13,7 +24,7 @@
     "yahoo.com": {
         "popServer": "pop.mail.yahoo.com",
         "popPort": "995",
-        "popEncyprtion": "SSL",
+        "popEncryption": "SSL",
         "smtpServer": "smtp.mail.yahoo.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"
@@ -21,9 +32,20 @@
     "gmail.com": {
         "popServer": "pop.gmail.com",
         "popPort": "995",
-        "popEncyprtion": "SSL",
+        "popEncryption": "SSL",
         "smtpServer": "smtp.gmail.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"
+    },
+    "aol.com": {
+        "popServer": "pop.aol.com",
+        "popPort": "995",
+        "popEncryption": "SSL",
+        "imapServer": "imap.aol.com",
+        "imapPort": "993",
+        "imapEncryption": "SSL",
+        "smtpServer": "smtp.aol.com",
+        "smtpPort": "465",
+        "smtpEcnryption": "SSL"
     }
 }
