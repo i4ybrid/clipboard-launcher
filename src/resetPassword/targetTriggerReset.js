@@ -1,7 +1,8 @@
 const puppeteer = require("puppeteer");
 const targetAccounts = require("../../config/targetAccounts.json");
 const targetParser = require("../email/parser/targetParser");
-//TODO - Pass targetParser into email waiter
+const emailMonitor = require("../email/emailMonitor");
+const { clickOnElement, delay } = require("../util/puppeteerHelper");
 
 const TARGET_URL = "https://target.com";
 const SHOW_WINDOW = true;
@@ -9,20 +10,30 @@ const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 
 global.startTime = Date.now();
 
-function loadRestPasswordsIntoMap() {
-    global.targetEmails = {};
+function instantiate() {
+    if (!global.canEnterResetCode) {
+        global.canEnterResetCode = {};
+    }
+    if (!global.targetEmails) {
+        global.targetEmails = {};
+    }
+    if (!global.pages) {
+        global.pages = {};
+    }
     targetAccounts.forEach((targetAccount) => {
-        if (targetAccount = targetAccount.email) {
+        if (targetAccount.email) {
             global.targetEmails[targetAccount.email] = targetAccount;
         }
     });
 }
 
 function loadReset() {
-    puppeteer
+    instantiate();
+
+    return puppeteer
         .launch({
             headless: (SHOW_WINDOW !== true),
-            ignoreDefaultArgs: ["--enable-automation"],
+            ignoreDefaultArgs: ["--enable-automation", "--disable-infobars"],
             trueignoreHTTPSErrors: true
         }).then(async (browser) => {
 
@@ -41,7 +52,7 @@ function loadReset() {
                     console.log("Sign in button found");
                     let mouse = signIn._page._mouse;
                     console.log(mouse._x + " : " + mouse._y);
-                    await delay(200);
+                    await delay(1000);
                     clickOnElement(page, signIn);
                 });
 
@@ -53,7 +64,11 @@ function loadReset() {
 
             let forgotPasswordPageCheck = await setInterval(async () => {
                 let h1Text = await page.evaluate(() => {
-                    return document.querySelector("h1").textContent;
+                    if (document.querySelector("h1")) {
+                        return document.querySelector("h1").textContent;
+                    } else {
+                        return "";
+                    }
                 })
 
                 if ("Forgot Password" === h1Text.trim()) {
@@ -61,7 +76,7 @@ function loadReset() {
                     await page.waitForSelector("input#username")
                         .then(async (emailInput) => {
                             await clickOnElement(page, emailInput);
-                            await emailInput.type(emailAddress);
+                            await emailInput.type(targetAccounts[0].email);
                             page.waitForSelector("button#continue")
                                 .then((button) => { button.click(); });
                         });
@@ -76,6 +91,7 @@ function loadReset() {
                         .then((button) => {
                             button.click();
                             global.canEnterResetCode[emailAddress] = true;
+                            emailMonitor.checkEmail(targetAccounts[0].email, targetAccounts[0].emailPassword, targetParser.parse);
                         });
                 });
 
@@ -91,70 +107,10 @@ function loadReset() {
             });
         })
         .catch((error) => {
-            console.log("error", "ERROR: " + error);
+            console.log("error", "ERROR: " + error.stack);
         });
 }
 
-/**
- * Loops logic to check if we can reset the code. When we determine it's possible, then move on
- * 
- * @param {*} resetCode 
- * @param {*} emailAddress 
- */
-function inputResetCode(resetCode, emailAddress) {
-    let page = global.pages[emailAddress];
-    let canEnterResetCode = global.canEnterResetCode[emailAddress];
-    
-    let checkEmailLoop = setInterval(() => {
-        if (page && canEnterResetCode === true) {
-            console.log("Entering reset code for [" + emailAddress + "]: " + resetCode);
-            //TODO Enter reset code here
-            clearInterval(checkEmailLoop);
-            enterNewPassword(emailAddress);
-        }
-    }, 500);
-}
-
-function enterNewPassword(emailAddress) {
-    let page = global.pages[emailAddress];
-    let emailInfo = global.targetEmails[emailAddress];
-    if (!emailInfo.newTargetPassword) {
-        console.log("Error! You didn't set a new password! Enter one manually.");
-    } else {
-        //TODO Enter new password and click the next button
-    }
-}
-
-/**
- * Move mouse and click on element's location
- * @param {*} page 
- * @param {*} elem 
- * @param {*} x 
- * @param {*} y 
- */
-async function clickOnElement(page, elem, x = null, y = null) {
-    const rect = await page.evaluate(el => {
-        const { top, left, width, height } = el.getBoundingClientRect();
-        return { top, left, width, height };
-    }, elem);
-
-    // Use given position or default to center
-    const _x = x !== null ? x : rect.width / 2;
-    const _y = y !== null ? y : rect.height / 2;
-
-    console.log("Clicking on " + (rect.left + _x) + " : " + (rect.top + _y));
-    await page.mouse.move(rect.left + _x, rect.top + _y);
-    await page.mouse.click(rect.left + _x, rect.top + _y);
-}
-
-function delay(time) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, time)
-    });
-}
-
-loadReset();
-
 module.exports = {
-    "inputResetCode": inputResetCode
-}
+    "loadReset": loadReset
+};

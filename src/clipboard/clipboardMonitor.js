@@ -1,5 +1,4 @@
 const clipboardy = require('clipboardy');
-const clipboardListener = require('clipboard-event');
 let lastString = "";
 
 /**

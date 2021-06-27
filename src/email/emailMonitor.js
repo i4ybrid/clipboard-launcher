@@ -1,7 +1,7 @@
 const POP3Client = require("poplib");
 const serverInfo = require("../../config/mailServer.json");
 
-const parsers = {"target": require("./parser/targetParser").parse};
+const parsers = {"target": require("./parser/targetParser")};
 
 function checkEmail(email, password, callback) {
     let domain;
@@ -33,12 +33,12 @@ function checkEmail(email, password, callback) {
         });
 
         client.on("locked", (cmd) => {
-            console.log("Current command has not finished yet. You tried calling " + cmd);
+            console.log("Current command has not finished yet. You tried calling " + cmd);w
         });
 
         client.on("login", (status, rawdata) => {
             if (status) {
-                //console.log("Login successful");
+                console.log("Logged into e-mail for " + email);
                 client.list();
             } else {
                 console.log("Login failed for " + email);
@@ -95,6 +95,3 @@ function checkEmail(email, password, callback) {
 module.exports = {
     "checkEmail": checkEmail
 }
-
-let targetAccounts = require("../../config/targetAccounts.json");
-checkEmail(targetAccounts[0].email, targetAccounts[0].emailPassword, parsers.target);
