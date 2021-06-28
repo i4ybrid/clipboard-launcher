@@ -35,7 +35,6 @@ const { delay } = require("../util/puppeteerHelper");
                 });
                 page.waitForSelector("input#password", { timeout: 50000000 })
                 .then(() => {
-                    //End loop, it means we found a good cod
                     clearInterval(checkEmailLoop);
                     enterNewPassword(emailAddress);
                 })
@@ -64,6 +63,7 @@ function enterNewPassword(emailAddress) {
                     if (accountNameSpan && "Sign in" === accountNameSpan.innerText) {
                         console.log("ERROR!! It looks like password reset was unsuccessful. " + emailAddress + "'s password may not have been set to " + emailInfor.newTargetPassword);
                     } else {
+                        global.passwordResetDone[emailAddress] = true;
                         console.log("Password for [" + emailAddress + "] was reset to " + emailInfo.newTargetPassword);
                     }
                 })

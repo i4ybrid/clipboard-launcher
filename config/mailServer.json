@@ -32,7 +32,7 @@
     "gmail.com": {
         "popServer": "pop.gmail.com",
         "popPort": "995",
-        "popEncryption": "SSL",
+        "popEncryption": "TLS",
         "smtpServer": "smtp.gmail.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"

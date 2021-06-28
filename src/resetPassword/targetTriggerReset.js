@@ -23,6 +23,9 @@ function instantiate() {
     if (!global.browsers) {
         global.browsers = {};
     }
+    if (!global.passwordResetDone) {
+        global.passwordResetDone = {};
+    }
 }
 
 function loadReset() {
@@ -33,6 +36,7 @@ function loadReset() {
         if (targetAccount.email) {
             global.targetEmails[targetAccount.email] = targetAccount;
             global.canEnterResetCode[targetAccount.email] = false;
+            global.passwordResetDone[targetAccount.email] = false;
 
             puppeteerPromises.push(invokeResetPasswordEmail(targetAccount));
         }
@@ -71,34 +75,24 @@ async function invokeResetPasswordEmail(targetAccount) {
                     page.click("#recoveryPassword");
                 });
 
-            let forgotPasswordPageCheck = await setInterval(async () => {
-                let h1Text = await page.evaluate(() => {
-                    if (document.querySelector("h1")) {
-                        return document.querySelector("h1").textContent;
-                    } else {
-                        return "";
-                    }
-                })
-
-                if ("Forgot Password" === h1Text.trim()) {
+            await page.waitForSelector("h1", { timeout: 50000000 })
+                .then(async () => {
                     console.log("In forgot password page");
                     await page.waitForSelector("input#username")
                         .then(async (emailInput) => {
                             await clickOnElement(page, emailInput);
+                            //TODO This sometimes messes up because of the loop
                             await emailInput.type(targetAccount.email);
-                            page.waitForSelector("button#continue")
-                                .then((button) => { button.click(); });
+                            page.click("button#continue");
                         });
-                    clearInterval(forgotPasswordPageCheck);
-                }
-            }, 500);
+                });
 
             await page.waitForSelector("label[for='resetPassword']")
                 .then(async (resetPasswordRadial) => {
                     await resetPasswordRadial.click();
                     page.waitForSelector("button#continue")
                         .then((button) => {
-                            //button.click();
+                            button.click();
                             global.canEnterResetCode[emailAddress] = true;
                             emailMonitor.checkEmail(targetAccount.email, targetAccount.emailPassword, targetParser.parse);
                         });
@@ -121,5 +115,6 @@ async function invokeResetPasswordEmail(targetAccount) {
 }
 
 module.exports = {
-    "loadReset": loadReset
+    "loadReset": loadReset,
+    "instantiate": instantiate
 };

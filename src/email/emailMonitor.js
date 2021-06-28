@@ -11,13 +11,13 @@ function checkEmail(email, password, callback) {
             domain = emailSplit[1];
         }
     }
-    
     if (domain && serverInfo[domain]) {
         let client = new POP3Client(
             serverInfo[domain].popPort,
             serverInfo[domain].popServer, {
                 enabletls: ("TLS" === serverInfo[domain].popEncryption),
-                debug: false
+                debug: true,
+                networkdebug: true
             });
 
         client.on("error", (err) => {
@@ -89,6 +89,18 @@ function checkEmail(email, password, callback) {
                 console.log("QUIT failed");
             }
         });
+
+
+
+        //Infinite loop to keep checking e-mails
+        let emailPullLoop = setInterval(() => {
+            if (!global.passwordResetDone[email] === false) {
+                console.log("Checking e-mail for [" + email + "]");
+                client.list();
+            } else {
+                clearInterval(emailPullLoop);
+            }
+        }, 2000);
     }
 }
 
