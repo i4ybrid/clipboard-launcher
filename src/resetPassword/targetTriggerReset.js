@@ -20,32 +20,41 @@ function instantiate() {
     if (!global.pages) {
         global.pages = {};
     }
-    targetAccounts.forEach((targetAccount) => {
-        if (targetAccount.email) {
-            global.targetEmails[targetAccount.email] = targetAccount;
-        }
-    });
+    if (!global.browsers) {
+        global.browsers = {};
+    }
 }
 
 function loadReset() {
     instantiate();
+    let puppeteerPromises = [];
 
+    targetAccounts.forEach((targetAccount) => {
+        if (targetAccount.email) {
+            global.targetEmails[targetAccount.email] = targetAccount;
+            global.canEnterResetCode[targetAccount.email] = false;
+
+            puppeteerPromises.push(invokeResetPasswordEmail(targetAccount));
+        }
+    })
+}
+
+async function invokeResetPasswordEmail(targetAccount) {
     return puppeteer
         .launch({
             headless: (SHOW_WINDOW !== true),
             ignoreDefaultArgs: ["--enable-automation", "--disable-infobars"],
             trueignoreHTTPSErrors: true
         }).then(async (browser) => {
-
             let page = await browser.newPage();
+            global.pages[targetAccount.email] = page;
+            global.browsers[targetAccount.email] = browser;
+
             await page.setViewport({ width: 900, height: 900 });
             page.setUserAgent(USER_AGENT);
             await page.goto(TARGET_URL);
             await page.click("a#account");
-            //TODO Add this to a loop
-            let emailAddress = targetAccounts[0].email;
-            global.canEnterResetCode[emailAddress] = false;
-            global.pages[emailAddress] = page;
+            let emailAddress = targetAccount.email;
 
             await page.waitForSelector("#accountNav-signIn > a > div", { timeout: 50000000 })
                 .then(async (signIn) => {
@@ -76,7 +85,7 @@ function loadReset() {
                     await page.waitForSelector("input#username")
                         .then(async (emailInput) => {
                             await clickOnElement(page, emailInput);
-                            await emailInput.type(targetAccounts[0].email);
+                            await emailInput.type(targetAccount.email);
                             page.waitForSelector("button#continue")
                                 .then((button) => { button.click(); });
                         });
@@ -89,9 +98,9 @@ function loadReset() {
                     await resetPasswordRadial.click();
                     page.waitForSelector("button#continue")
                         .then((button) => {
-                            button.click();
+                            //button.click();
                             global.canEnterResetCode[emailAddress] = true;
-                            emailMonitor.checkEmail(targetAccounts[0].email, targetAccounts[0].emailPassword, targetParser.parse);
+                            emailMonitor.checkEmail(targetAccount.email, targetAccount.emailPassword, targetParser.parse);
                         });
                 });
 
