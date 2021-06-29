@@ -40,3 +40,32 @@ Under config/targetAccounts.json, you will need to enter your information. While
 ## Beta Notes
 Because it's in beta, the window still opens and executes with you as the user. If something fails to work or click, manually click it. Please report any bugs to me.
 The script only supports outlook, hotmail, gmail, yahoo, and aol currently. If there are other e-mails you want to use, let me know as well.
+
+## FAQ
+
+### My e-mail isn't being checked.
+You must enable POP
+
+## Configuring Gmail
+Google goes through an API instead of POP3. There's quite a bit of setup you will need to do to get gmail going.
+Follow the steps for Get gmail API credentials here, except instead of setting the application to other, just select Desktop: https://github.com/ismail-codinglab/gmail-inbox#get-gmail-api-credentials 
+
+Download the credentials, which is a json file, and add it to that user's data under targetAccounts.json that should look like:
+```
+    {
+        "email": "emailAddress@gmail.com",
+        "emailPassword": "passwordThatCanBeIgnored", 
+        "newTargetPassword": "newTargetPasswordHere1",
+        "gmailAuthData": {
+            "installed": {
+                "client_id": "????????????????????????.apps.googleusercontent.com",
+                "project_id": "?????????????????",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": "???????????????",
+                "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+            }
+        }
+    }
+```
