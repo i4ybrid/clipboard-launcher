@@ -1,10 +1,18 @@
 const POP3Client = require("poplib");
 const serverInfo = require("../../config/mailServer.json");
 
-const parsers = {"target": require("./parser/targetParser")};
-
 function checkEmail(email, password, callback) {
-    let domain;
+    let emailPullLoop = setInterval(() => {
+        if (global.passwordResetDone[email] === false) {
+            retrieveEmail(email, password, callback);
+        } else {
+            clearInterval(emailPullLoop);
+        }
+    }, 2000);
+}
+
+function retrieveEmail(email, password, callback) {
+    let domain, client;
     if (email) {
         let emailSplit = email.split("@");
         if (emailSplit && emailSplit.length > 1) {
@@ -12,12 +20,12 @@ function checkEmail(email, password, callback) {
         }
     }
     if (domain && serverInfo[domain]) {
-        let client = new POP3Client(
+        client = new POP3Client(
             serverInfo[domain].popPort,
             serverInfo[domain].popServer, {
                 enabletls: ("TLS" === serverInfo[domain].popEncryption),
-                debug: true,
-                networkdebug: true
+                debug: false,
+                networkdebug: false
             });
 
         client.on("error", (err) => {
@@ -33,29 +41,25 @@ function checkEmail(email, password, callback) {
         });
 
         client.on("locked", (cmd) => {
-            console.log("Current command has not finished yet. You tried calling " + cmd);w
+            console.log("Current command has not finished yet. You tried calling " + cmd);
         });
 
         client.on("login", (status, rawdata) => {
             if (status) {
-                console.log("Logged into e-mail for " + email);
+                //console.log("Logged into e-mail for " + email);
                 client.list();
             } else {
                 console.log("Login failed for " + email);
-                client.quit();
             }
         });
 
         client.on("list", (status, msgcount, msgnumber, data, rawdata) => {
             if (status === false) {
                 console.log("LIST failed");
-                client.quit();
             } else {
                 //console.log("LIST success with " + msgcount + " element(s)");
                 if (msgcount > 0) {
                     client.retr(msgcount);
-                } else {
-                    client.quit();
                 }
             }
         });
@@ -68,17 +72,14 @@ function checkEmail(email, password, callback) {
                 client.quit();
             } else {
                 console.log("RETR failed for msgnumber " + msgnumber);
-                client.quit();
             }
         });
 
         client.on("dele", function(status, msgnumber, data, rawdata) {
             if (status === true) {
-                //console.log("DELE success for msgnumber " + msgnumber);
-                client.quit();
+                console.log("DELE success for msgnumber " + msgnumber);
             } else {
                 console.log("DELE failed for msgnumber " + msgnumber);
-                client.quit();
             }
         });
 
@@ -89,19 +90,9 @@ function checkEmail(email, password, callback) {
                 console.log("QUIT failed");
             }
         });
-
-
-
-        //Infinite loop to keep checking e-mails
-        let emailPullLoop = setInterval(() => {
-            if (!global.passwordResetDone[email] === false) {
-                console.log("Checking e-mail for [" + email + "]");
-                client.list();
-            } else {
-                clearInterval(emailPullLoop);
-            }
-        }, 2000);
     }
+
+    return client;
 }
 
 module.exports = {
