@@ -20,11 +20,14 @@
         "smtpServer": "smtp-mail.outlook.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"
-    }, 
+    },
     "yahoo.com": {
         "popServer": "pop.mail.yahoo.com",
         "popPort": "995",
         "popEncryption": "SSL",
+        "imapServer": "imap.mail.yahoo.com",
+        "imapPort": "993",
+        "imapEncryption": "TLS",
         "smtpServer": "smtp.mail.yahoo.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"
@@ -33,6 +36,9 @@
         "popServer": "pop.gmail.com",
         "popPort": "995",
         "popEncryption": "TLS",
+        "imapServer": "imap.gmail.com",
+        "imapPort": "993",
+        "imapEncryption": "TLS",
         "smtpServer": "smtp.gmail.com",
         "smtpPort": "587",
         "smtpEcnryption": "STARTTLS"

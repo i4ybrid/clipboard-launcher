@@ -1,11 +1,12 @@
 const POP3Client = require("poplib");
 const serverInfo = require("../../config/mailServer.json");
 
-function checkEmail(email, password, callback) {
+async function checkEmail(email, password, callback) {
     let emailPullLoop = setInterval(() => {
-        if (global.passwordResetDone[email] === false) {
+        if (global.passwordResetDone[email] === false && global.canEnterResetCode[email] === false) {
             retrieveEmail(email, password, callback);
-        } else {
+        }
+        if (global.passwordResetDone[email] === true) {
             clearInterval(emailPullLoop);
         }
     }, 2000);
@@ -65,7 +66,6 @@ function retrieveEmail(email, password, callback) {
         });
 
         client.on("retr", (status, msgnumber, data, rawdata) => {
- 
             if (status === true) {
                 //console.log("RETR success for msgnumber " + msgnumber);
                 callback(data);

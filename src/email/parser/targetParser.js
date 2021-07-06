@@ -8,12 +8,12 @@ function parse(data) {
             skipTextLinks: true,
         };
         simpleParser(data, options)
-        .then((parsed) => {
-            //console.log(JSON.stringify(parsed));
-            handleParsedData(parsed);
-        }).catch((err) => {
-            console.log("ERROR!", err);
-        })
+            .then((parsed) => {
+                //console.log(JSON.stringify(parsed));
+                handleParsedData(parsed);
+            }).catch((err) => {
+                console.log("ERROR!", err);
+            })
     }
 }
 
@@ -44,7 +44,9 @@ function handleParsedData(parsedData) {
 
     if (resetCode && toAddresses && toAddresses.length > 0) {
         console.log("Found matching code!! " + resetCode);
+        global.canEnterResetCode[emailAddress] = true;
         toAddresses.forEach((toAddress) => {
+            //TODO Fire event instead of invoking it direc
             targetReset.inputResetCode(resetCode, toAddress);
             console.log("Resetting: [" + toAddress + "] with code = " + resetCode);
         });

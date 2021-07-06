@@ -38,18 +38,27 @@ function loadReset() {
             global.canEnterResetCode[targetAccount.email] = false;
             global.passwordResetDone[targetAccount.email] = false;
 
-            puppeteerPromises.push(invokeResetPasswordEmail(targetAccount));
+            let puppeteerPromise = getPuppeteerWindow(targetAccount);
+            puppeteerPromises.push(puppeteerPromise);
+            invokeResetPasswordEmail(puppeteerPromise, targetAccount);
         }
     })
 }
 
-async function invokeResetPasswordEmail(targetAccount) {
+function getPuppeteerWindow() {
     return puppeteer
         .launch({
             headless: (SHOW_WINDOW !== true),
             ignoreDefaultArgs: ["--enable-automation", "--disable-infobars"],
             trueignoreHTTPSErrors: true
-        }).then(async (browser) => {
+        }).catch((error) => {
+            console.log("error", "ERROR: " + error.stack);
+        });
+}
+
+async function invokeResetPasswordEmail(puppeteerPromise, targetAccount) {
+    puppeteerPromise
+        .then(async(browser) => {
             let page = await browser.newPage();
             global.pages[targetAccount.email] = page;
             global.browsers[targetAccount.email] = browser;
@@ -58,10 +67,9 @@ async function invokeResetPasswordEmail(targetAccount) {
             page.setUserAgent(USER_AGENT);
             await page.goto(TARGET_URL);
             await page.click("a#account");
-            let emailAddress = targetAccount.email;
 
             await page.waitForSelector("#accountNav-signIn > a > div", { timeout: 50000000 })
-                .then(async (signIn) => {
+                .then(async(signIn) => {
                     console.log("Sign in button found");
                     let mouse = signIn._page._mouse;
                     console.log(mouse._x + " : " + mouse._y);
@@ -76,24 +84,24 @@ async function invokeResetPasswordEmail(targetAccount) {
                 });
 
             await page.waitForSelector("h1", { timeout: 50000000 })
-                .then(async () => {
+                .then(async() => {
                     console.log("In forgot password page");
                     await page.waitForSelector("input#username")
-                        .then(async (emailInput) => {
+                        .then(async(emailInput) => {
                             await clickOnElement(page, emailInput);
-                            //TODO This sometimes messes up because of the loop
                             await emailInput.type(targetAccount.email);
                             page.click("button#continue");
                         });
                 });
 
             await page.waitForSelector("label[for='resetPassword']")
-                .then(async (resetPasswordRadial) => {
+                .then(async(resetPasswordRadial) => {
                     await resetPasswordRadial.click();
                     page.waitForSelector("button#continue")
                         .then((button) => {
                             button.click();
-                            global.canEnterResetCode[emailAddress] = true;
+                            //TODO Create event to launch the e-mail check instead of this
+                            global.em.emit("checkEmail", { email: targetAccount.email, password: targetAccount.emailPassword, parse: targetParser.parse });
                             emailMonitor.checkEmail(targetAccount.email, targetAccount.emailPassword, targetParser.parse);
                         });
                 });
@@ -108,9 +116,6 @@ async function invokeResetPasswordEmail(targetAccount) {
                     }
                 }
             });
-        })
-        .catch((error) => {
-            console.log("error", "ERROR: " + error.stack);
         });
 }
 
