@@ -1,4 +1,5 @@
-const TargetReset = require("./src/resetPassword/targetTriggerReset");
+//const TargetReset = require("./src/resetPassword/targetTriggerReset");
+const TargetReset = require("./src/resetPassword/targetResetWorkflow");
 const emailMonitor = require("./src/email/emailMonitor");
 const targetParser = require("./src/email/parser/targetParser");
 
